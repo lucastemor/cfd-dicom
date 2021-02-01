@@ -2,11 +2,6 @@ import vtk,sys
 import numpy as np
 import glob,re,os
 
-import write_dicoms
-
-def glob_sort_vti(vti_series_path):
-	return sorted(glob.glob(vti_series_path+'/*.vti'),key = lambda x : int(re.findall(r'([\d]+).vti',x)[0]))#[::5]
-
 def get_q_pixel_array(vti,name=None,threshold=False,max_dicom_value=2047):
 	"""
 	for convenience
@@ -62,38 +57,6 @@ def get_umag_voxel_array(vti,name=None):
 	
 	return u_mag.reshape(dimensions)
 
-#def array_3d_to_dicom_series()
-
-
-if __name__=='__main__':
-	vti_series_path = '/Users/lucas/Documents/School/BSL/cfd-dicom/foo/'
-	case_name = 'testing'
-	quantity = 'u' # or 'q'
-
-	#if case_name not in os.
-		#os.mkdir
-
-	if quantity == 'u':
-		conversion_function = get_umag_pixel_array
-	elif quantity == 'q':
-		conversion_function = get_q_pixel_array
-	else:
-		print (f'quantity {quantity} unknown or unspecified')
-		sys.exit()
-
-
-	time_series_files = glob_sort_vti(vti_series_path)
-	series_id = 0
-	for t,timestep in enumerate(time_series_files):
-		reader = vtk.vtkXMLImageDataReader()
-		reader.SetFileName(timestep)
-		reader.Update()
-		vti = reader.GetOutput()
-	
-		array_3d = conversion_function(vti)
-
-		for slice_id, slice_array_2d in enumerate(array_3d):
-			plane_centre_coords = pydicom.multival.MultiValue(pydicom.valuerep.DSfloat,[dimensions[0]/2.0,dimensions[1]/2.0,float(i)]) #each slice 2d is an xy plane slice thgat moves along z axis
 
 
 
