@@ -2,24 +2,31 @@ import vtk,sys
 import numpy as np
 import glob,re,os
 
-def get_q_pixel_array(vti,name=None,threshold=False,max_dicom_value=2047):
+
+MAX_DICOM_VALUE = 2047
+
+def global_png_scale(image,global_max_pixel_value):
+	return (image*(MAX_DICOM_VALUE/global_max_pixel_value) + MAX_DICOM_VALUE).astype(np.uint16)
+
+
+def get_q_pixel_array(vti,name=None,threshold=False):
 	"""
 	for convenience
 	"""
-	return rescale_to_dicom(get_q_voxel_array(vti,name,threshold),max_dicom_value)
+	return rescale_to_dicom(get_q_voxel_array(vti,name,threshold))
 
-def get_umag_pixel_array(vti,name=None, max_dicom_value=2047):
+def get_umag_pixel_array(vti,name=None):
 	"""
 	for convenience
 	"""
-	return rescale_to_dicom(get_umag_voxel_array(vti,name),max_dicom_value)
+	return rescale_to_dicom(get_umag_voxel_array(vti,name))
 
-def rescale_to_dicom(array, max_dicom_value=2047):
+def rescale_to_dicom(array):
 	"""
 	data need to be rescaled so the pixel values are visible in dicom viewer
 	2047 is specified by default based on  example files but hasn't relaly been played with
 	"""
-	return array * (max_dicom_value/array.max()) + array
+	return array * (MAX_DICOM_VALUE/array.max()) + array
 
 def get_q_voxel_array(vti,name=None,threshold=False):
 	"""

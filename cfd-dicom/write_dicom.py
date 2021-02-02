@@ -92,6 +92,9 @@ class dicom_stack:
 		self.ds = ds
 
 	def set_volumetric_slice_metadata(self,pixel_array):
+		"""
+		For volumetric data
+		"""
 		self.ds.Columns = pixel_array.shape[0]
 		self.ds.Rows = pixel_array.shape[1]
 		if pixel_array.dtype != np.uint16:
@@ -108,6 +111,42 @@ class dicom_stack:
 		self.ds.SeriesNumber =  self.n_timesteps #number of timesteps
 		self.ds.SeriesInstanceUID = f'1.3.12.2.1107.5.1.4.54693.3000000610250859320620000{str(self.timestep).zfill(4)}'
 		self.ds.file_meta.MediaStorageSOPInstanceUID = f"1.3.12.2.1107.5.1.4.54693.30000006101906583670300{str(self.series_id).zfill(6)}"
+
+	def set_prerendered_image_metadata(self,pixel_array,timestep,angle):
+		"""
+		for frames rendered from paraview (or elsewhere)
+		"""
+
+		self.ds.Rows = pixel_array.shape[0]
+		self.ds.Columns = pixel_array.shape[1]
+		if pixel_array.dtype != np.uint16:
+			pixel_array = pixel_array.astype(np.uint16)
+		self.ds.PixelData = pixel_array.tobytes()
+
+		self.ds.InstanceNumber = self.series_id 
+		self.ds.ImagePositionPatient = [0,0,angle] 
+		self.ds.SliceLocation = angle 
+
+		self.ds.AcquisitionTime =  str(time.time())#str(timestep)
+		self.ds.SeriesTime = str(float(timestep))
+		self.ds.SeriesDescription = f'Timestep {timestep}'
+		self.ds.SeriesNumber =  self.n_timesteps
+		self.ds.SeriesInstanceUID = f'1.3.12.2.1107.5.1.4.54693.30000006102508593206200{str(int(timestep)).zfill(6)}'#f'1.3.12.2.1107.5.1.4.54693.3000000610250859320620000{str(int(timestep)).zfill(6)}'
+		self.ds.FrameOfReferenceUID = f'1.3.12.2.1107.5.1.4.54693.30000006102508593206200{str(int(timestep)).zfill(6)}' #f'1.3.12.2.1107.5.1.4.54693.3000000610250859320620000{str(int(timestep)).zfill(6)}'
+
+		self.ds.RotationDirection = 'CW'
+		self.ds.ImageOrientationPatient = [1, 0, 0, 0, 1, 0]
+
+
+	def write_camera_positions(self,scaled_image,timestep,angle):
+		"""
+		for prerendered png frames, e.g., pathlines
+		"""
+		output_file = f'{self.write_dir}/IM-0001-{str(self.series_id).zfill(6)}.dcm'
+		self.initialize_dicom(output_file)
+		self.set_prerendered_image_metadata(scaled_image,timestep,angle)
+		self.write()
+		self.series_id+=1
 
 	def write(self):
 		self.ds.save_as(self.ds.filename)
