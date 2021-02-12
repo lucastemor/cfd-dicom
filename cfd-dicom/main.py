@@ -21,10 +21,10 @@ if __name__=='__main__':
 	Series id tracks "global" posistion in the dicom stack
 	Slice id tracks "local" position in the timestep stack
 	"""
-	vti_series_path = '/Users/lucas/Documents/School/BSL/cfd-dicom/foo/'
+	vti_series_path = '/home/lucas/Documents/viz/renders/Horos/surgical/MCA07/q_200x0200/'
 	png_series_path = '/Users/lucas/Documents/School/BSL/cfd-dicom/foo/pathline/'
-	case_name = 'pathline_images'
-	quantity = 'pathline' #'u' # or 'q' or 'pathline'
+	case_name = 'MCA07_nothresh_q'
+	quantity = 'q' #'u' # or 'q' or 'pathline'
 
 	outdir = f'./output/{case_name}/'
 	if os.path.exists(outdir) == False:
