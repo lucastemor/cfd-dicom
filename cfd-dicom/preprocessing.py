@@ -21,12 +21,16 @@ def get_umag_pixel_array(vti,name=None):
 	"""
 	return rescale_to_dicom(get_umag_voxel_array(vti,name))
 
+'''
 def rescale_to_dicom(array):
 	"""
 	data need to be rescaled so the pixel values are visible in dicom viewer
 	2047 is specified by default based on  example files but hasn't relaly been played with
 	"""
 	return array * (MAX_DICOM_VALUE/array.max()) + array
+'''
+def rescale_to_dicom(array):
+	return array*1000
 
 def get_q_voxel_array(vti,name=None,threshold=False):
 	"""

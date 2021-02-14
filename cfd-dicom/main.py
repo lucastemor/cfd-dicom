@@ -21,10 +21,10 @@ if __name__=='__main__':
 	Series id tracks "global" posistion in the dicom stack
 	Slice id tracks "local" position in the timestep stack
 	"""
-	vti_series_path = '/home/lucas/Documents/viz/renders/Horos/surgical/MCA07/q_200x0200/'
+	vti_series_path = '/Users/lucas/Documents/School/BSL/cfd-dicom/foo/velocity200x200surgical_mca07_/'
 	png_series_path = '/Users/lucas/Documents/School/BSL/cfd-dicom/foo/pathline/'
-	case_name = 'MCA07_nothresh_q'
-	quantity = 'q' #'u' # or 'q' or 'pathline'
+	case_name = 'MCA07_vel_0_1000'
+	quantity = 'u' #'u' # or 'q' or 'pathline'
 
 	outdir = f'./output/{case_name}/'
 	if os.path.exists(outdir) == False:
@@ -42,7 +42,7 @@ if __name__=='__main__':
 
 	if quantity != 'pathline':
 		time_series_files = glob_sort_files(vti_series_path,'vti')
-		dicom_stack = wd.dicom_stack(write_dir=outdir,n_timesteps=len(time_series_files))
+		dicom_stack = wd.dicom_stack(write_dir=outdir,n_timesteps=len(time_series_files),case_name=case_name)
 
 		for t,timestep in enumerate(time_series_files):
 			reader = vtk.vtkXMLImageDataReader()
@@ -51,6 +51,9 @@ if __name__=='__main__':
 			vti = reader.GetOutput()
 		
 			array_3d = conversion_function(vti)
+			print (f'-------------Step {t}-------------------')
+			print (array_3d.min(),array_3d.max())
+			print (array_3d.astype(np.uint16).min(),array_3d.astype(np.uint16).max())
 			dicom_stack.write_isotemporal_slices(array_3d)
 
 	else:
