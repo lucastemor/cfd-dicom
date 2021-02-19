@@ -21,19 +21,25 @@ if __name__=='__main__':
 	Series id tracks "global" posistion in the dicom stack
 	Slice id tracks "local" position in the timestep stack
 	"""
-	vti_series_path = '/Users/lucas/Documents/School/BSL/cfd-dicom/foo/velocity200x200surgical_mca07_/'
+	vti_series_path = '/home/lucas/Documents/viz/renders/Horos/surgical/MCA07/q_200x0200'
 	png_series_path = '/Users/lucas/Documents/School/BSL/cfd-dicom/foo/pathline/'
-	case_name = 'MCA07_vel_0_1000'
-	quantity = 'u' #'u' # or 'q' or 'pathline'
+	case_name = 'mca_07_q'
+	quantity = 'q' #'u' # or 'q' or 'pathline' or 'dye'
 
 	outdir = f'./output/{case_name}/'
 	if os.path.exists(outdir) == False:
 		os.mkdir(outdir)
 
+
+	name = None
+
 	if quantity == 'u':
 		conversion_function = preprocessing.get_umag_pixel_array
 	elif quantity == 'q':
 		conversion_function = preprocessing.get_q_pixel_array
+	elif quantity == 'dye':
+		conversion_function = preprocessing.get_q_pixel_array
+		name = 'n_points_in_cell'
 	elif quantity == 'pathline':
 		conversion_function = None
 	else:
@@ -50,7 +56,7 @@ if __name__=='__main__':
 			reader.Update()
 			vti = reader.GetOutput()
 		
-			array_3d = conversion_function(vti)
+			array_3d = conversion_function(vti,name=name)
 			print (f'-------------Step {t}-------------------')
 			print (array_3d.min(),array_3d.max())
 			print (array_3d.astype(np.uint16).min(),array_3d.astype(np.uint16).max())
