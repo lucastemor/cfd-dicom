@@ -44,7 +44,7 @@ def get_q_voxel_array(vti,name=None,threshold=False):
 	if name==None:
 		name = 'Q-criterion'
 
-	q_criterion = np.array(vti.GetPointData().GetArray('Q-criterion'))
+	q_criterion = np.array(vti.GetPointData().GetArray(name))
 	if threshold: q_criterion = np.where(q_criterion < 0, 0, q_criterion) #double check thresholding 	
 
 	return q_criterion.reshape(dimensions)
