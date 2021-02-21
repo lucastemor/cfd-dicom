@@ -40,6 +40,8 @@ if __name__=='__main__':
 		print (f'quantity {quantity} unknown or unspecified')
 		sys.exit()
 
+	psf=True
+
 	if quantity != 'pathline':
 		time_series_files = glob_sort_files(vti_series_path,'vti')
 		dicom_stack = wd.dicom_stack(write_dir=outdir,n_timesteps=len(time_series_files),case_name=case_name)
@@ -51,6 +53,8 @@ if __name__=='__main__':
 			vti = reader.GetOutput()
 		
 			array_3d = conversion_function(vti)
+			if psf: array_3d = preprocessing.psf_volume(array_3d)
+
 			print (f'-------------Step {t}-------------------')
 			print (array_3d.min(),array_3d.max())
 			print (array_3d.astype(np.uint16).min(),array_3d.astype(np.uint16).max())

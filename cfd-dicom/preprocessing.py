@@ -2,6 +2,7 @@ import vtk,sys
 import numpy as np
 import glob,re,os
 
+from scipy.signal import convolve2d as conv2
 
 MAX_DICOM_VALUE = 2047
 
@@ -69,7 +70,17 @@ def get_umag_voxel_array(vti,name=None):
 	return u_mag.reshape(dimensions)
 
 
+def psf_volume(array_3d):
+	for slice_id,slice_2d in enumerate(array_3d):
+		array_3d[slice_id] = psf_slice(slice_2d)
+	return(array_3d)
 
+
+def psf_slice(slice_2d):
+	psf = np.ones((5, 5)) / 25
+	blurred = conv2(slice_2d, psf, 'same')
+	return(blurred)
+	
 
 
 
