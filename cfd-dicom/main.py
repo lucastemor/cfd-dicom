@@ -21,16 +21,16 @@ if __name__=='__main__':
 	Series id tracks "global" posistion in the dicom stack
 	Slice id tracks "local" position in the timestep stack
 	"""
-	vti_series_path = '/mnt/3414B51914B4DED4/dicom/voxelize_pathlines/grid200cube_mask200_track25_radius0p05_pathline/vti_full_cycle/sample/'
+	vti_series_path = '/mnt/3414B51914B4DED4/dicom/data/voxelize_pathlines/SINGLE_POINT/500x500x500_single_point_tube0.01width_track25/'
 	png_series_path = '/Users/lucas/Documents/School/BSL/cfd-dicom/foo/pathline/'
-	case_name = 'pathline_vox_test'
+	case_name = 'pathline_single_point_test_NOpsf'
 	quantity = 'u' #'u' # or 'q' or 'pathline' or 'dye'
 
 	outdir = f'./output/{case_name}/'
 	if os.path.exists(outdir) == False:
 		os.mkdir(outdir)
 
-
+	psf=False
 	name = None
 
 	if quantity == 'u':
@@ -46,7 +46,6 @@ if __name__=='__main__':
 		print (f'quantity {quantity} unknown or unspecified')
 		sys.exit()
 
-	psf=True
 
 	if quantity != 'pathline':
 		time_series_files = glob_sort_files(vti_series_path,'vti')
