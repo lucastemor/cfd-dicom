@@ -188,7 +188,7 @@ if __name__=='__main__':
 
 					track_counter = 1
 
-			
+				
 			else:
 				print (f'skipped particle at step {t} because not in domain')
 
