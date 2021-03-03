@@ -18,8 +18,6 @@ from pyevtk.hl import imageToVTK
 def glob_sort_files(series_path,extension):
 	return sorted(glob.glob(series_path+f'/*.{extension}'),key = lambda x : int(re.findall(r'([\d]+).{}'.format(extension),x)[0]))#[::5]
 
-
-  
 def Bresenham3D(x1, y1, z1, x2, y2, z2): 
 	"""
 	# Python3 code for generating points on a 3-D line  
@@ -117,8 +115,11 @@ if __name__=='__main__':
 	vti_series_path = '/home/lucas/Documents/viz/renders/Horos/surgical/MCA07/velocity_200x200/'
 	png_series_path = '/Users/lucas/Documents/School/BSL/cfd-dicom/foo/pathline/'
 
-	particle_polydata_path = '/mnt/3414B51914B4DED4/dicom/data/voxelize_pathlines/SINGLE_POINT/single_point_tracked_polydata/'
+	#particle_polydata_path = '/mnt/3414B51914B4DED4/dicom/data/voxelize_pathlines/mask200_tracked/polydata/'
+	particle_polydata_path = '/home/lucas/Documents/viz/data/computed_pathlines/surgical_computed_pathlines/MCA07/polydata/'
 
+	sigma=1 #std. of gaussian blurring filter
+	track_length=13  #similar to shutter speed, or better track length from temporal particles to pathlines in paraview
 
 	vti_time_series_files = glob_sort_files(vti_series_path,'vti')
 	particle_time_series_files = glob_sort_files(particle_polydata_path,'vtp')
@@ -130,35 +131,42 @@ if __name__=='__main__':
 
 	voxel_array = np.zeros(vti.GetDimensions())
 
-	#outdir = '/mnt/3414B51914B4DED4/dicom/data/voxelize_pathlines/SINGLE_POINT/single_point_gaussian_dicom_test/'
-	#dicom_stack = wd.dicom_stack(write_dir=outdir,n_timesteps=len(time_series_files),case_name=case_name)
+	outdir = '/mnt/3414B51914B4DED4/dicom/cfd-dicom/cfd-dicom/output/voxelized_pathline_dense_13ss/'
+	case_name = 'voxelized_pathline_dense_13ss'
+	n_timesteps= int(len(particle_time_series_files)/track_length)
+	dicom_stack = wd.dicom_stack(write_dir=outdir,n_timesteps=n_timesteps,case_name=case_name)
 
-	sigma=1
-	track_length=5  #similar to shutter speed, or better track length from temporal particles to pathlines in paraview
 
 	track_counter = 1
 	for t,timestep in enumerate(particle_time_series_files[:-1]):
 
+		track_counter +=1
+
 		next_step = particle_time_series_files[t+1]
 
-		particle = pv.read(timestep)
-		next_particle = pv.read(next_step)
+		all_particles = pv.read(timestep)
+		next_all_particles = pv.read(next_step)
 
-		if len(next_particle.points>0):
+		common_ids = np.intersect1d(all_particles.point_arrays['ParticleId'],next_all_particles.point_arrays['ParticleId'])
 
-			point = particle.points[0]
-			next_point = next_particle.points[0]
+		for particle_id in common_ids:
+
+			point = all_particles.points[np.where(all_particles.point_arrays['ParticleId'] == particle_id)][0]
+			next_point = next_all_particles.points[np.where(next_all_particles.point_arrays['ParticleId'] == particle_id)][0]
+
+			#point = particle.points[0]
+			#next_point = next_particle.points[0]
 
 			#find closest point on grid
 			point_id_on_grid = vti.FindPoint(point)
-			if point_id_on_grid != -1:
+			next_point_id_on_grid = vti.FindPoint(next_point)
+
+			if point_id_on_grid != -1 and next_point_id_on_grid !=-1:
 
 				#we have a vild point
-				track_counter +=1
 
 				x1,y1,z1 = point_id_to_structured_coords(vti, point_id_on_grid)
 
-				next_point_id_on_grid = vti.FindPoint(next_point)
 				x2,y2,z2 = point_id_to_structured_coords(vti, next_point_id_on_grid)
 				
 				voxel_spline = Bresenham3D(x1,y1,z1,x2,y2,z2)
@@ -168,32 +176,42 @@ if __name__=='__main__':
 					y=line_point[1]
 					z=line_point[2]
 
-					voxel_array[x,y,z] = 1
-				
-				if track_counter == track_length:
-					blurred = gaussian_filter(voxel_array,sigma=sigma)
-
-					#see https://vtk.org/Wiki/VTK/Writing_VTK_files_using_python
-					#dimensions
-					nx, ny, nz = vti.GetDimensions()
-					ncells = nx * ny * nz
-					npoints = (nx + 1) * (ny + 1) * (nz + 1) 
-
-					outfile = f'/mnt/3414B51914B4DED4/dicom/data/voxelize_pathlines/SINGLE_POINT/single_point_track1_vti_test/3dbresenhm_200x200x200_track{track_length}_blurred_sigma{sigma}_{str(t).zfill(4)}'
-
-					imageToVTK(outfile, origin= vti.GetOrigin(), spacing= vti.GetSpacing(), pointData = {"pathline" : blurred} ) #can work for cell data too
-
-					#reset voxel to 0 at every timstep. Or in future use 4d arrray and write out slices?
-					voxel_array = np.zeros(vti.GetDimensions())
-
-					track_counter = 1
-
-				
+					voxel_array[x,y,z] +=1
+			
 			else:
-				print (f'skipped particle at step {t} because not in domain')
+				print (f'skipped particle {particle_id} at step {t} because not in domain',end="\r")
+			
 
-		else:
-			print (f'skipped timestep {t} becasue no particle')
+		if track_counter == track_length:
+			blurred = gaussian_filter(voxel_array,sigma=sigma)
+
+
+			'''
+			#see https://vtk.org/Wiki/VTK/Writing_VTK_files_using_python
+			#dimensions
+			nx, ny, nz = vti.GetDimensions()
+			ncells = nx * ny * nz
+			npoints = (nx + 1) * (ny + 1) * (nz + 1) 
+
+			outfile = f'/mnt/3414B51914B4DED4/dicom/data/voxelize_pathlines/500randomseed/vti/3dbresenhm_200x200x200_track{track_length}_blurred_sigma{sigma}_{str(t).zfill(4)}'
+
+			imageToVTK(outfile, origin= vti.GetOrigin(), spacing= vti.GetSpacing(), pointData = {"pathline" : blurred} ) #can work for cell data too
+			'''
+
+			
+			voxel_array *= 1000
+
+			print (f'-------------Step {t}-------------------')
+			print (voxel_array.min(),voxel_array.max())
+			print (voxel_array.astype(np.uint16).min(),voxel_array.astype(np.uint16).max())
+			dicom_stack.write_isotemporal_slices(voxel_array)
+			
+
+
+			#reset voxel to 0 at every timstep. Or in future use 4d arrray and write out slices?
+			voxel_array = np.zeros(vti.GetDimensions())
+			track_counter = 1
+
 
 
 		#print (f'Failed at time {t}')

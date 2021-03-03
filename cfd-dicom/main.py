@@ -30,7 +30,6 @@ if __name__=='__main__':
 	if os.path.exists(outdir) == False:
 		os.mkdir(outdir)
 
-	psf=False
 	name = None
 
 	if quantity == 'u':
@@ -58,7 +57,6 @@ if __name__=='__main__':
 			vti = reader.GetOutput()
 		
 			array_3d = conversion_function(vti,name = name)
-			if psf: array_3d = preprocessing.psf_volume(array_3d)
 
 			print (f'-------------Step {t}-------------------')
 			print (array_3d.min(),array_3d.max())
