@@ -6,6 +6,8 @@ import matplotlib.pyplot as plt
 
 from pyevtk.hl import imageToVTK
 from scipy.ndimage import gaussian_filter
+import write_dicom as wd
+
 
 def closest_node(point,nodes):
 	"""
@@ -35,7 +37,7 @@ x = np.linspace(xmin,xmax,num=slice_dim_x)
 y = np.linspace(ymin,ymax,num=slice_dim_y)
 z = np.linspace(zmin,zmax,num=n_slices)
 
-grid_points = np.array([[xx,yy] for xx in x for yy in y])\
+grid_points = np.array([[xx,yy] for xx in x for yy in y])
 
 slices = surface.slice_along_axis(n=n_slices,axis='z')
 
@@ -55,14 +57,23 @@ for slice_id in range(n_slices):
 
 
 
+outdir = '/mnt/3414B51914B4DED4/dicom/data/surface_data/DICOM_1'
+case_name = 'test_wss_slices'
+n_timesteps= 1
+dicom_stack = wd.dicom_stack(write_dir=outdir,n_timesteps=n_timesteps,case_name=case_name)
 
+voxel_array *= 1000
+dicom_stack.write_isotemporal_slices(voxel_array)
+
+
+'''
 #see https://vtk.org/Wiki/VTK/Writing_VTK_files_using_python
 #dimensions
 nx, ny, nz = voxel_array.shape
 ncells = nx * ny * nz
 npoints = (nx + 1) * (ny + 1) * (nz + 1) 
 	
-outfile = f'/mnt/3414B51914B4DED4/dicom/data/surface_data/200x200x200sigma2wss_subtraction'
+outfile = f'/mnt/3414B51914B4DED4/dicom/data/surface_data/200x200x200sigma2wss_subtraction_origpreserv'
 
 spacing = tuple(np.abs([(xmax-xmin)/slice_dim_x,(ymax-ymin)/slice_dim_y,(zmax-zmin)/n_slices]))
 
@@ -73,7 +84,7 @@ voxel_array += np.where(voxel_array==0,blurred,0)
 
 imageToVTK(outfile, origin= (xmin,ymin,zmin), spacing=spacing, pointData = {"wss_mag" : voxel_array} ) #can work for cell data too
 
-
+'''
 #resampled = griddata(planar_points,values,grid_points,'nearest').reshape(slice_dim_x,slice_dim_y)
 #plt.pcolormesh(resampled_image)
 #plt.show()

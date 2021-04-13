@@ -115,25 +115,41 @@ if __name__=='__main__':
 	vti_series_path = '/home/lucas/Documents/viz/renders/Horos/surgical/MCA07/velocity_200x200/'
 	png_series_path = '/Users/lucas/Documents/School/BSL/cfd-dicom/foo/pathline/'
 
-	#particle_polydata_path = '/mnt/3414B51914B4DED4/dicom/data/voxelize_pathlines/mask200_tracked/polydata/'
-	particle_polydata_path = '/home/lucas/Documents/viz/data/computed_pathlines/surgical_computed_pathlines/MCA07/polydata/'
+	particle_polydata_path = '/mnt/3414B51914B4DED4/dicom/data/voxelize_pathlines/mask200_tracked/polydata/'
+	#particle_polydata_path = '/home/lucas/Documents/viz/data/computed_pathlines/surgical_computed_pathlines/MCA07/polydata/'
 
 	sigma=1 #std. of gaussian blurring filter
-	track_length=13  #similar to shutter speed, or better track length from temporal particles to pathlines in paraview
+	track_length= 4  #similar to shutter speed, or better track length from temporal particles to pathlines in paraview
+	step_stride = 1
+
+	n_DICOM_frames = 100 #max in horos is 100 
+
 
 	vti_time_series_files = glob_sort_files(vti_series_path,'vti')
-	particle_time_series_files = glob_sort_files(particle_polydata_path,'vtp')
+	particle_time_series_files = glob_sort_files(particle_polydata_path,'vtp')[::step_stride]
+
+	photographed_frames = np.arange(track_length,len(particle_time_series_files),track_length)
+
+	if len(photographed_frames) > n_DICOM_frames:
+		idx = np.round(np.linspace(0, len(photographed_frames) - 1, n_DICOM_frames)).astype(int)
+		frames_to_write = photographed_frames[idx]
+	else:
+		frames_to_write = photographed_frames
+
 
 	reader = vtk.vtkXMLImageDataReader()
 	reader.SetFileName(vti_time_series_files[0])
 	reader.Update()
 	vti = reader.GetOutput()
 
+	u_voxels = preprocessing.get_umag_voxel_array(vti)
+	model_overlay = np.where(u_voxels>0,1,0)
 	voxel_array = np.zeros(vti.GetDimensions())
 
-	outdir = '/mnt/3414B51914B4DED4/dicom/cfd-dicom/cfd-dicom/output/voxelized_pathline_dense_13ss/'
-	case_name = 'voxelized_pathline_dense_13ss'
-	n_timesteps= int(len(particle_time_series_files)/track_length)
+	outdir = f'/mnt/3414B51914B4DED4/dicom/cfd-dicom/cfd-dicom/output/voxelized_pathline_coarse_{track_length}ss_withgeo/'
+	case_name = f'voxelized_pathline_caorse_{track_length}ss_sigma{sigma}_geo'
+	n_timesteps = n_DICOM_frames
+	#n_timesteps= int(len(particle_time_series_files)/track_length)
 	dicom_stack = wd.dicom_stack(write_dir=outdir,n_timesteps=n_timesteps,case_name=case_name)
 
 
@@ -172,9 +188,9 @@ if __name__=='__main__':
 				voxel_spline = Bresenham3D(x1,y1,z1,x2,y2,z2)
 
 				for line_point in voxel_spline:
-					x = line_point[0]
+					z = line_point[0] #flip for writing from np array to dcm directly
 					y=line_point[1]
-					z=line_point[2]
+					x=line_point[2]
 
 					voxel_array[x,y,z] +=1
 			
@@ -182,9 +198,9 @@ if __name__=='__main__':
 				print (f'skipped particle {particle_id} at step {t} because not in domain',end="\r")
 			
 
-		if track_counter == track_length:
+		if t in photographed_frames and t in frames_to_write:
 			blurred = gaussian_filter(voxel_array,sigma=sigma)
-
+			voxel_array = blurred
 
 			'''
 			#see https://vtk.org/Wiki/VTK/Writing_VTK_files_using_python
@@ -193,13 +209,15 @@ if __name__=='__main__':
 			ncells = nx * ny * nz
 			npoints = (nx + 1) * (ny + 1) * (nz + 1) 
 
-			outfile = f'/mnt/3414B51914B4DED4/dicom/data/voxelize_pathlines/500randomseed/vti/3dbresenhm_200x200x200_track{track_length}_blurred_sigma{sigma}_{str(t).zfill(4)}'
+			outfile = f'/mnt/3414B51914B4DED4/dicom/data/voxelize_pathlines/500randomseed/vti/TEST3dbresenhm_200x200x200_track{track_length}_blurred_sigma{sigma}_{str(t).zfill(4)}'
 
 			imageToVTK(outfile, origin= vti.GetOrigin(), spacing= vti.GetSpacing(), pointData = {"pathline" : blurred} ) #can work for cell data too
 			'''
-
+			
 			
 			voxel_array *= 1000
+			voxel_array+=model_overlay
+			#voxel_array = np.where(voxel_array==0,model_overlay,voxel_array)
 
 			print (f'-------------Step {t}-------------------')
 			print (voxel_array.min(),voxel_array.max())
@@ -207,11 +225,13 @@ if __name__=='__main__':
 			dicom_stack.write_isotemporal_slices(voxel_array)
 			
 
-
 			#reset voxel to 0 at every timstep. Or in future use 4d arrray and write out slices?
 			voxel_array = np.zeros(vti.GetDimensions())
 			track_counter = 1
 
+		elif t in photographed_frames:
+			voxel_array = np.zeros(vti.GetDimensions())
+			track_counter = 1
 
 
 		#print (f'Failed at time {t}')
