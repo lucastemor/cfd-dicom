@@ -21,9 +21,9 @@ if __name__=='__main__':
 	Series id tracks "global" posistion in the dicom stack
 	Slice id tracks "local" position in the timestep stack
 	"""
-	vti_series_path = '/mnt/3414B51914B4DED4/dicom/data/voxelize_pathlines/SINGLE_POINT/500x500x500_single_point_tube0.01width_track25/'
-	png_series_path = '/Users/lucas/Documents/School/BSL/cfd-dicom/foo/pathline/'
-	case_name = 'pathline_single_point_test_NOpsf'
+	vti_series_path = '/home/lucas/Documents/viz/renders/Horos/surgical/MCA07/velocity_200x200/'
+	#png_series_path = '/Users/lucas/Documents/School/BSL/cfd-dicom/foo/pathline/'
+	case_name = 'MCA07_NewNewMetadata'
 	quantity = 'u' #'u' # or 'q' or 'pathline' or 'dye'
 
 	outdir = f'./output/{case_name}/'
@@ -47,7 +47,7 @@ if __name__=='__main__':
 
 
 	if quantity != 'pathline':
-		time_series_files = glob_sort_files(vti_series_path,'vti')
+		time_series_files = glob_sort_files(vti_series_path,'vti')[0:5]
 		dicom_stack = wd.dicom_stack(write_dir=outdir,n_timesteps=len(time_series_files),case_name=case_name)
 
 		for t,timestep in enumerate(time_series_files):
@@ -58,9 +58,6 @@ if __name__=='__main__':
 		
 			array_3d = conversion_function(vti,name = name)
 
-			print (f'-------------Step {t}-------------------')
-			print (array_3d.min(),array_3d.max())
-			print (array_3d.astype(np.uint16).min(),array_3d.astype(np.uint16).max())
 			dicom_stack.write_isotemporal_slices(array_3d)
 
 	else:

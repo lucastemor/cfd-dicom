@@ -1,0 +1,198 @@
+  BAD COMPARE
+
+  Dataset.file_meta -------------------------------
+
+- (0002, 0003) Media Storage SOP Instance UID      UI: 1.2.392.200036.9116.2.1220567263.0000000000.000000.000.00000
+
++ (0002, 0000) File Meta Information Group Length  UL: 182
+
++ (0002, 0001) File Meta Information Version       OB: b'\x00\x01'
+
++ (0002, 0002) Media Storage SOP Class UID         UI: Secondary Capture Image Storage
+
++ (0002, 0003) Media Storage SOP Instance UID      UI: 1.2.276.0.7238010.5.1.4.0.58436.1618872806.1064
+
++ (0002, 0010) Transfer Syntax UID                 UI: Explicit VR Little Endian
+
+- (0002, 0012) Implementation Class UID            UI: 1.2.3.4
+
++ (0002, 0012) Implementation Class UID            UI: 1.2.276.0.7238010.5.0.3.5.4
+
++ (0002, 0013) Implementation Version Name         SH: 'OSIRIX'
+
+  -------------------------------------------------
+
+- (0008, 0008) Image Type                          CS: ['DERIVED', 'SECONDARY', 'AXIAL', 'SUBTRACTION']
+
++ (0008, 0005) Specific Character Set              CS: 'ISO_IR 100'
+
++ (0008, 0012) Instance Creation Date              DA: '20210419'
+
++ (0008, 0013) Instance Creation Time              TM: '185326'
+
+- (0008, 0016) SOP Class UID                       UI: CT Image Storage
+
++ (0008, 0016) SOP Class UID                       UI: Secondary Capture Image Storage
+
+- (0008, 0018) SOP Instance UID                    UI: 1.2.392.200036.9116.2.1220567263.0000000000.000000.000.00000
+
++ (0008, 0018) SOP Instance UID                    UI: 1.2.276.0.7238010.5.1.4.0.58436.1618872806.1064
+
+- (0008, 0020) Study Date                          DA: '20210419'
+
++ (0008, 0020) Study Date                          DA: ''
+
+- (0008, 0021) Series Date                         DA: '20210419'
+
+- (0008, 0022) Acquisition Date                    DA: '20210419'
+
++ (0008, 0022) Acquisition Date                    DA: ''
+
+- (0008, 0023) Content Date                        DA: '20210419'
+
++ (0008, 0023) Content Date                        DA: ''
+
++ (0008, 002a) Acquisition DateTime                DT: ''
+
+- (0008, 0030) Study Time                          TM: '131420.000'
+
++ (0008, 0030) Study Time                          TM: ''
+
+- (0008, 0031) Series Time                         TM: '132018.033'
+
+- (0008, 0032) Acquisition Time                    TM: '132139.0'
+
++ (0008, 0032) Acquisition Time                    TM: ''
+
+- (0008, 0033) Content Time                        TM: '132139.0'
+
++ (0008, 0033) Content Time                        TM: ''
+
++ (0008, 0050) Accession Number                    SH: ''
+
+- (0008, 0060) Modality                            CS: 'OT'
+
++ (0008, 0060) Modality                            CS: 'SC'
+
++ (0008, 0070) Manufacturer                        LO: ''
+
++ (0008, 0090) Referring Physician's Name          PN: ''
+
+- (0008, 103e) Series Description                  LO: 'Timestep 0'
+
++ (0008, 103e) Series Description                  LO: '3D VR'
+
++ (0008, 1090) Manufacturer's Model Name           LO: 'Horos'
+
+  (0010, 0010) Patient's Name                      PN: 'MCA07_NewMetadata'
+
+  (0010, 0020) Patient ID                          LO: '1234'
+
++ (0020, 000d) Study Instance UID                  UI: 1.2.276.0.7238010.5.1.2.0.58436.1618872806.1061
+
++ (0020, 000e) Series Instance UID                 UI: 1.3.6.1.4.1.19291.2.1.2.164131231149202466405656067411
+
+- (0018, 0050) Slice Thickness                     DS: "1.0"
+
+- (0018, 1130) Table Height                        DS: "0.0"
+
+- (0018, 1140) Rotation Direction                  CS: 'CW'
+
+- (0018, 5100) Patient Position                    CS: 'HFS'
+
+- (0018, 9302) Acquisition Type                    CS: 'STATIONARY'
+
+- (0018, 9318) Reconstruction Target Center (Patie FD: [0.0, 0.0, 0.0]
+
+- (0018, 9327) Table Position                      FD: 0.0
+
+- (0020, 000d) Study Instance UID                  UI: 1.3.6.1.4.1.12201.1011603639.75.20200110123223171.1
+
+- (0020, 000e) Series Instance UID                 UI: 1.3.12.2.1107.5.1.4.54693.3000000610250859320620000.0000
+
+- (0020, 0010) Study ID                            SH: '26244'
+
++ (0020, 0010) Study ID                            SH: ''
+
+- (0020, 0011) Series Number                       IS: "100"
+
++ (0020, 0011) Series Number                       IS: "5299"
+
++ (0020, 0012) Acquisition Number                  IS: "1"
+
+- (0020, 0013) Instance Number                     IS: "0"
+
++ (0020, 0013) Instance Number                     IS: "1"
+
++ (0020, 0037) Image Orientation (Patient)         DS: [0.198565, 0.665461, -0.719537, 0.595812, 0.500960, 0.627732]
+
+- (0020, 0020) Patient Orientation                 CS: ['L', 'P']
+
+- (0020, 0032) Image Position (Patient)            DS: [100.0, 100.0, 0.0]
+
+- (0020, 0037) Image Orientation (Patient)         DS: [1.0, 0.0, 0.0, 0.0, 1.0, 0.0]
+
+- (0020, 0052) Frame of Reference UID              UI: 1.2.392.200036.9116.2.6.1.48.1220567263.1578629661.994251
+
+- (0020, 1041) Slice Location                      DS: "0.0"
+
+- (0020, 9056) Stack ID                            SH: '1_26244'
+
+- (0020, 9128) Temporal Position Index             UL: 0
+
+- (0028, 0002) Samples per Pixel                   US: 1
+
++ (0028, 0002) Samples per Pixel                   US: 3
+
+- (0028, 0004) Photometric Interpretation          CS: 'MONOCHROME2'
+
++ (0028, 0004) Photometric Interpretation          CS: 'RGB'
+
++ (0028, 0006) Planar Configuration                US: 0
+
+- (0028, 0010) Rows                                US: 200
+
++ (0028, 0010) Rows                                US: 897
+
+- (0028, 0011) Columns                             US: 200
+
++ (0028, 0011) Columns                             US: 1664
+
+- (0028, 0030) Pixel Spacing                       DS: [1.0, 1.0]
+
++ (0028, 0030) Pixel Spacing                       DS: [0.382974, 0.382974]
+
+- (0028, 0100) Bits Allocated                      US: 16
+
++ (0028, 0100) Bits Allocated                      US: 8
+
+- (0028, 0101) Bits Stored                         US: 16
+
++ (0028, 0101) Bits Stored                         US: 8
+
+- (0028, 0102) High Bit                            US: 15
+
++ (0028, 0102) High Bit                            US: 7
+
+- (0028, 0103) Pixel Representation                US: 1
+
++ (0028, 0103) Pixel Representation                US: 0
+
++ (0040, a043)  Concept Name Code Sequence  0 item(s) ---- 
+
+- (0028, 0106) Smallest Image Pixel Value          SS: [30812, 12336, 30812, 12336]
+
+- (0028, 0107) Largest Image Pixel Value           SS: [30812, 26214, 30812, 26214]
+
+- (0028, 1050) Window Center                       DS: "40.0"
+
+- (0028, 1051) Window Width                        DS: "80.0"
+
+- (0028, 1052) Rescale Intercept                   DS: "0.0"
+
+- (0028, 1053) Rescale Slope                       DS: "1.0"
+
+- (7fe0, 0010) Pixel Data                          OW: Array of 80000 elements
+
++ (7fe0, 0010) Pixel Data                          OB: Array of 4477824 elements
+
