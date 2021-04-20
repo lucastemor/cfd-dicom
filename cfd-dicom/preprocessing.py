@@ -4,17 +4,14 @@ import glob,re,os
 
 from scipy.signal import convolve2d as conv2
 
-MAX_DICOM_VALUE = 2047
+MAX_DICOM_VALUE = 2^16 - 1
+
 
 def global_png_scale(image,global_max_pixel_value):
 	return (image*(MAX_DICOM_VALUE/global_max_pixel_value) + MAX_DICOM_VALUE).astype(np.uint16)
 
 
-def get_q_pixel_array(vti,name=None,threshold=False):
-	"""
-	for convenience
-	"""
-	return rescale_to_dicom(get_q_voxel_array(vti,name,threshold))
+
 
 def get_umag_pixel_array(vti,name=None):
 	"""
@@ -33,7 +30,7 @@ def rescale_to_dicom(array):
 def rescale_to_dicom(array):
 	return array*1000
 
-def get_q_voxel_array(vti,name=None,threshold=False):
+def get_q_pixel_array(vti,name=None,threshold=True):
 	"""
 	Default name should be Q-criterion from paraview, butcan specify custom name if needed
 	Can be used for other scalar quantities if cusotm name is passed
@@ -45,9 +42,11 @@ def get_q_voxel_array(vti,name=None,threshold=False):
 		name = 'Q-criterion'
 
 	q_criterion = np.array(vti.GetPointData().GetArray(name))
-	if threshold: q_criterion = np.where(q_criterion < 0, 0, q_criterion) #double check thresholding 	
+	if threshold: 
+		q_criterion = np.where(q_criterion < 0, 0.02, q_criterion)
+		print ('Threshold!', q_criterion.min(), q_criterion.max()) 	
 
-	return q_criterion.reshape(dimensions)
+	return rescale_to_dicom(q_criterion.reshape(dimensions))
 
 def get_umag_voxel_array(vti,name=None):
 	"""

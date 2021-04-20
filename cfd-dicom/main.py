@@ -21,10 +21,11 @@ if __name__=='__main__':
 	Series id tracks "global" posistion in the dicom stack
 	Slice id tracks "local" position in the timestep stack
 	"""
-	vti_series_path = '/home/lucas/Documents/viz/renders/Horos/surgical/MCA07/velocity_200x200/'
+	#vti_series_path = '/home/lucas/Documents/viz/renders/Horos/surgical/MCA07/velocity_200x200/'
+	vti_series_path = '/home/lucas/Documents/viz/renders/Horos/surgical/MCA07/q_200x0200/'
 	#png_series_path = '/Users/lucas/Documents/School/BSL/cfd-dicom/foo/pathline/'
-	case_name = 'MCA07_NewNewMetadata'
-	quantity = 'u' #'u' # or 'q' or 'pathline' or 'dye'
+	case_name = 'MCA07_QNewThreshandMetadata'
+	quantity = 'q' #'u' # or 'q' or 'pathline' or 'dye'
 
 	outdir = f'./output/{case_name}/'
 	if os.path.exists(outdir) == False:
@@ -47,7 +48,7 @@ if __name__=='__main__':
 
 
 	if quantity != 'pathline':
-		time_series_files = glob_sort_files(vti_series_path,'vti')[0:5]
+		time_series_files = glob_sort_files(vti_series_path,'vti')[0:]
 		dicom_stack = wd.dicom_stack(write_dir=outdir,n_timesteps=len(time_series_files),case_name=case_name)
 
 		for t,timestep in enumerate(time_series_files):
