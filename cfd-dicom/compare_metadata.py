@@ -36,4 +36,4 @@ working_step2 = pydicom.read_file(sorted(glob.glob(working_path_ts2+'/*.dcm'))[1
 cfd_step1 = pydicom.read_file(sorted(glob.glob(cfd_path_ts1+'/*.dcm'))[0])
 
 image1 = pydicom.read_file('/home/lucas/Downloads/WORKING_ORIG.dcm')
-image2 = pydicom.read_file('/home/lucas/Downloads/WORKING_EXP.dcm')
+image2 = pydicom.read_file('/home/lucas/Downloads/BAD_EXP.dcm')
