@@ -184,6 +184,7 @@ class dicom_stack:
 	def set_metadata(self):
 		"""
 		Initialize metadata
+		Faster implementation is to inherit generic/shared metadata and only update the things that change in space or time
 		"""
 
 		header_metadata = {
