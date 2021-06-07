@@ -118,7 +118,7 @@ if __name__=='__main__':
 	particle_polydata_path = '/mnt/3414B51914B4DED4/dicom/data/voxelize_pathlines/mask200_tracked/polydata/'
 	#particle_polydata_path = '/home/lucas/Documents/viz/data/computed_pathlines/surgical_computed_pathlines/MCA07/polydata/'
 
-	sigma=1 #std. of gaussian blurring filter
+	sigma=1 #std. of gaussian blurring filter (in this case, tube 'width')
 	track_length= 4  #similar to shutter speed, or better track length from temporal particles to pathlines in paraview
 	step_stride = 1
 
@@ -145,6 +145,8 @@ if __name__=='__main__':
 	u_voxels = preprocessing.get_umag_voxel_array(vti)
 	model_overlay = np.where(u_voxels>0,1,0)
 	voxel_array = np.zeros(vti.GetDimensions())
+
+	NOTE TO READ VOXEL SIZE & NORMALIZE SIGMA
 
 	outdir = f'/mnt/3414B51914B4DED4/dicom/cfd-dicom/cfd-dicom/output/voxelized_pathline_coarse_{track_length}ss_withgeo/'
 	case_name = f'voxelized_pathline_caorse_{track_length}ss_sigma{sigma}_geo'
@@ -200,6 +202,7 @@ if __name__=='__main__':
 
 		if t in photographed_frames and t in frames_to_write:
 			blurred = gaussian_filter(voxel_array,sigma=sigma)
+			NOTE TO BLUR AND THEN DIVIDE OUT BY MAX TO NORMALIZE
 			voxel_array = blurred
 
 			'''
