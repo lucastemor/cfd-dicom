@@ -9,14 +9,21 @@ import time,datetime,os,random
 
 
 def check_and_convert_array(pixel_array):
+	'''
+	DICOM allows for custom bit depth UP TO 16 bit ...
+	Should try and change this to something lower as we don't need all of that dynamic range
+	13 bit, for example should be sufficient
+	Note that this must also change alongside 'BitsAllocated', 'BitsStored','HighBit' tags
+	'''
 	if pixel_array.dtype != np.uint16:
 		pixel_array = pixel_array.astype(np.uint16)
 	return pixel_array.tobytes()
 
 class dicom_stack:
 	"""
-	Based on mewtadata of working CT stack from Nicole
-
+	Based on metadata of working CT stack from Nicole
+	Arbitrary coordinte system and measurements are used right now
+	Can preserve physical measurements by instead encoding voxel length spacing for slice thickness, pixel spacing, and other tags related to spatial positions
 	"""
 	def __init__(self,write_dir,n_timesteps,case_name='case_name',patient_id='1234'):
 
@@ -165,7 +172,7 @@ class dicom_stack:
 	def write(self):
 		self.ds.save_as(self.ds.filename)
 
-
+'''
 class OLD_dicom_stack:
 	"""
 	Main class for setting metadata and writing in 4D
@@ -308,3 +315,4 @@ class OLD_dicom_stack:
 
 	def write(self):
 		self.ds.save_as(self.ds.filename)
+'''

@@ -28,7 +28,7 @@ if __name__=='__main__':
 	#png_series_path = '/Users/lucas/Documents/School/BSL/cfd-dicom/foo/pathline/'
 
 	quantity = 'u' #'u' # or 'q' or 'pathline' or 'dye'
-	case_name = f'MCA07_isotropic_voxels_{quantity}'
+	case_name = f'MCA07_13bit_isotropic_voxels_{quantity}'
 
 
 	######################################################
@@ -38,7 +38,7 @@ if __name__=='__main__':
 
 
 	outdir = f'./output/{case_name}/'
-	if os.path.exists(outdir) == False:
+	if os.path.exists(outdir) == False:	
 		os.mkdir(outdir)
 
 	name = None

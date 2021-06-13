@@ -202,7 +202,7 @@ if __name__=='__main__':
 
 		if t in photographed_frames and t in frames_to_write:
 			blurred = gaussian_filter(voxel_array,sigma=sigma)
-			NOTE TO BLUR AND THEN DIVIDE OUT BY MAX TO NORMALIZE
+			NOTE TO BLUR AND THEN DIVIDE OUT BY MAX TO NORMALIZE	
 			voxel_array = blurred
 
 			'''
