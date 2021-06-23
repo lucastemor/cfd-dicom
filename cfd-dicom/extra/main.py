@@ -23,7 +23,7 @@ if __name__=='__main__':
 
 	############### SETTINGS ###########################
 
-	vti_series_path = '/Users/lucas/Documents/School/BSL/Horos/isotropic_voxels/comparison_filesize/'
+	vti_series_path = '/Users/lucas/Documents/School/BSL/Horos/isotropic_voxels/render_styles/'
 	#vti_series_path = '/home/lucas/Documents/viz/renders/Horos/surgical/MCA07/q_200x0200/'
 	#png_series_path = '/Users/lucas/Documents/School/BSL/cfd-dicom/foo/pathline/'
 
@@ -38,7 +38,7 @@ if __name__=='__main__':
 
 	for res_file in resolutions:
 		time_series_files = [res_file]#glob_sort_files(vti_series_path,'vti')[0:10]
-		case_name = 'FILESIZE_compare_'+os.path.splitext(os.path.split(res_file)[1])[0]
+		case_name = f'STYLEcompare_clipp{quantity}_'+os.path.splitext(os.path.split(res_file)[1])[0]
 
 		outdir = f'./output/{case_name}/'
 		if os.path.exists(outdir) == False:	

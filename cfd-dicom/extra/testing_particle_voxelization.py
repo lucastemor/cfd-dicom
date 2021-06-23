@@ -1,4 +1,4 @@
-import vtk,sys
+ import vtk,sys
 import numpy as np
 import glob,re,os
 

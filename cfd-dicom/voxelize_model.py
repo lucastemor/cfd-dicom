@@ -5,26 +5,37 @@ Important note that slicing is no longer arbitrary, so need to read land slice a
 
 import vtk 
 import pyvista as pv 
-import h5py 
+import h5py,os 
 import numpy as np
 from pathlib import Path
 
-VOXEL_SIZE = 0.2    #in mm, assuming mesh lengths are also in mm
+VOXEL_SIZE = 0.02    #in mm, assuming mesh lengths are also in mm
 N_STEPS = 100       #number of steps to sample. Will take this many steps uniformly over all available steps
 
 CLIP = True
 
-CLIP_BOX = [19.8571, 33.8062,
-			3.79448, 22.7821,
-			91.6152, 107.278] #sac and parent for MCA 07
+CLIP_BOX_PARENT = [19.8571, 33.8062,
+			       3.79448, 22.7821,
+			       91.6152, 107.278] #sac and parent for MCA 07
 
+CLIP_BOX_SAC = [20.3978,28.2777,
+				8.42559,16.9411,
+				91.6152,98.2842]  #sac only for MCA 07
+				
 if __name__ == '__main__':
+
+	####################################
 	
 	case_name = 'MCA07'
 	data_path = Path('/Volumes/lucas-ssd/MASc/Ubuntu_backup/dicom/pipe_ipcs_ab_cn_4D027_MCA07_constant_ts9600_cycles2_uOrder1')
 	mesh_file = data_path/'4D027_MCA07.h5'
 
-	outdir = Path('/Users/lucas/Documents/School/BSL/Horos/isotropic_voxels')
+	outdir = Path(f'/Users/lucas/Documents/School/BSL/Horos/isotropic_voxels/{case_name}_size{VOXEL_SIZE}_parent')
+
+	####################################
+
+	if os.path.exists(outdir) == False:	
+		os.mkdir(outdir)
 
 	all_timesteps = sorted(data_path.glob('*ts=*'))
 	sample_indices = np.round(np.linspace(0, len(all_timesteps) - 1, N_STEPS)).astype(int)
@@ -69,4 +80,4 @@ if __name__ == '__main__':
 
 		structured_mesh = pv.create_grid(mesh, dimensions=(n_voxels_x,n_voxels_y,n_voxels_z))
 		resampled_image = structured_mesh.sample(mesh)
-		resampled_image.save(outdir/case_name/f"resampledimage_{str(i).zfill(4)}.vti")
+		resampled_image.save(outdir/f"resampledimage_{str(i).zfill(4)}.vti")

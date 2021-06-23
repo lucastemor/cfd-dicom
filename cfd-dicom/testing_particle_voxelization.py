@@ -13,7 +13,7 @@ import pyvista as pv
 
 from scipy.ndimage import gaussian_filter
 
-from pyevtk.hl import imageToVTK
+#from pyevtk.hl import imageToVTK
 
 def glob_sort_files(series_path,extension):
 	return sorted(glob.glob(series_path+f'/*.{extension}'),key = lambda x : int(re.findall(r'([\d]+).{}'.format(extension),x)[0]))#[::5]
@@ -112,18 +112,30 @@ if __name__=='__main__':
 	Series id tracks "global" posistion in the dicom stack
 	Slice id tracks "local" position in the timestep stack
 	"""
-	vti_series_path = '/home/lucas/Documents/viz/renders/Horos/surgical/MCA07/velocity_200x200/'
-	png_series_path = '/Users/lucas/Documents/School/BSL/cfd-dicom/foo/pathline/'
 
-	particle_polydata_path = '/mnt/3414B51914B4DED4/dicom/data/voxelize_pathlines/mask200_tracked/polydata/'
+	#########################################
+
+	vti_series_path = '/Users/lucas/Documents/School/BSL/Horos/isotropic_voxels/MCA07_size0.02_parent/'
+	#png_series_path = '/Users/lucas/Documents/School/BSL/cfd-dicom/foo/pathline/'
+
+	particle_polydata_path = '/Volumes/lucas-ssd/MASc/Ubuntu_backup/dicom/200mask/polydata/'
+	#particle_polydata_path = '/mnt/3414B51914B4DED4/dicom/data/voxelize_pathlines/mask200_tracked/polydata/'
 	#particle_polydata_path = '/home/lucas/Documents/viz/data/computed_pathlines/surgical_computed_pathlines/MCA07/polydata/'
 
-	sigma=1 #std. of gaussian blurring filter (in this case, tube 'width')
+	sigma=0#std. of gaussian blurring filter, will be normalized (in this case, tube 'width')
 	track_length= 4  #similar to shutter speed, or better track length from temporal particles to pathlines in paraview
 	step_stride = 1
 
 	n_DICOM_frames = 100 #max in horos is 100 
 
+
+	case_name = f'voxelized_pathline_isotropic0.02_{track_length}ss_sigma{sigma}_geo'
+
+	#########################################
+
+	outdir = f'./output/{case_name}/'
+	if os.path.exists(outdir) == False:	
+		os.mkdir(outdir)
 
 	vti_time_series_files = glob_sort_files(vti_series_path,'vti')
 	particle_time_series_files = glob_sort_files(particle_polydata_path,'vtp')[::step_stride]
@@ -142,14 +154,15 @@ if __name__=='__main__':
 	reader.Update()
 	vti = reader.GetOutput()
 
-	u_voxels = preprocessing.get_umag_voxel_array(vti)
+	u_voxels = preprocessing.get_umag_pixel_array(vti)
 	model_overlay = np.where(u_voxels>0,1,0)
-	voxel_array = np.zeros(vti.GetDimensions())
 
-	NOTE TO READ VOXEL SIZE & NORMALIZE SIGMA
+	z_dim,y_dim,x_dim = vti.GetDimensions()
+	voxel_array = np.zeros((x_dim,y_dim,z_dim))	
 
-	outdir = f'/mnt/3414B51914B4DED4/dicom/cfd-dicom/cfd-dicom/output/voxelized_pathline_coarse_{track_length}ss_withgeo/'
-	case_name = f'voxelized_pathline_caorse_{track_length}ss_sigma{sigma}_geo'
+	voxel_size = np.max(vti.GetSpacing())
+	sigma = sigma/voxel_size
+
 	n_timesteps = n_DICOM_frames
 	#n_timesteps= int(len(particle_time_series_files)/track_length)
 	dicom_stack = wd.dicom_stack(write_dir=outdir,n_timesteps=n_timesteps,case_name=case_name)
@@ -190,7 +203,7 @@ if __name__=='__main__':
 				voxel_spline = Bresenham3D(x1,y1,z1,x2,y2,z2)
 
 				for line_point in voxel_spline:
-					z = line_point[0] #flip for writing from np array to dcm directly
+					z=line_point[0] #flip for writing from np array to dcm directly
 					y=line_point[1]
 					x=line_point[2]
 
@@ -202,8 +215,7 @@ if __name__=='__main__':
 
 		if t in photographed_frames and t in frames_to_write:
 			blurred = gaussian_filter(voxel_array,sigma=sigma)
-			NOTE TO BLUR AND THEN DIVIDE OUT BY MAX TO NORMALIZE	
-			voxel_array = blurred
+			voxel_array = blurred/blurred.max()
 
 			'''
 			#see https://vtk.org/Wiki/VTK/Writing_VTK_files_using_python
@@ -229,11 +241,11 @@ if __name__=='__main__':
 			
 
 			#reset voxel to 0 at every timstep. Or in future use 4d arrray and write out slices?
-			voxel_array = np.zeros(vti.GetDimensions())
+			voxel_array = np.zeros((x_dim,y_dim,z_dim))	
 			track_counter = 1
 
 		elif t in photographed_frames:
-			voxel_array = np.zeros(vti.GetDimensions())
+			voxel_array = np.zeros((x_dim,y_dim,z_dim))	
 			track_counter = 1
 
 

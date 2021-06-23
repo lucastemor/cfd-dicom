@@ -13,7 +13,7 @@ import pyvista as pv
 
 from scipy.ndimage import gaussian_filter
 
-from pyevtk.hl import imageToVTK
+#from pyevtk.hl import imageToVTK
 
 def glob_sort_files(series_path,extension):
 	return sorted(glob.glob(series_path+f'/*.{extension}'),key = lambda x : int(re.findall(r'([\d]+).{}'.format(extension),x)[0]))#[::5]
@@ -116,141 +116,135 @@ if __name__=='__main__':
 
 	track_length= 4  #similar to shutter speed, or better track length from temporal particles to pathlines in paraview
 	step_stride = 1
-	sigmas = [0,0.1,0.5,0.75,1]
-	densities = [500,250,125,63]
+	sigmas = [0,0.05,0.1]
+	voxel_sizes = [0.2,0.1,0.05]
+	#densities = [500,250,125,63]
 
-	#resoltion = 200
-	voxel_path = vti_series_path = '/home/lucas/Documents/viz/renders/Horos/surgical/MCA07/velocity_200x200/velocity200x200surgical_mca07_0.vti'
-	reader = vtk.vtkXMLImageDataReader()
-	reader.SetFileName(voxel_path)
-	reader.Update()
-	vti = reader.GetOutput()
+	vti_series_path = '/Users/lucas/Documents/School/BSL/Horos/isotropic_voxels/comparison_voxelsize/'
+	particle_polydata_path = '/Volumes/lucas-ssd/MASc/Ubuntu_backup/dicom/200mask/polydata/'
 
+	file_paths = glob.glob(vti_series_path+'*.vti')
 
-	for sigma in sigmas:
-		for density in densities:
-			seed_path = f'/mnt/3414B51914B4DED4/dicom/data/comparisons/seed_density_resample/seed_{density}.vtp'
+	for voxel_path in file_paths:
 
-	
+		reader = vtk.vtkXMLImageDataReader()
+		reader.SetFileName(voxel_path)
+		reader.Update()
+		vti = reader.GetOutput()
 
+		for sigma in sigmas:
+			case_name = 'SEED_compare_'+os.path.splitext(os.path.split(voxel_path)[1])[0]+f'_{sigma}sigma'
 
-	vti_time_series_files = glob_sort_files(vti_series_path,'vti')
-	particle_time_series_files = glob_sort_files(particle_polydata_path,'vtp')[::step_stride]
-
-	photographed_frames = np.arange(track_length,len(particle_time_series_files),track_length)
-
-	if len(photographed_frames) > n_DICOM_frames:
-		idx = np.round(np.linspace(0, len(photographed_frames) - 1, n_DICOM_frames)).astype(int)
-		frames_to_write = photographed_frames[idx]
-	else:
-		frames_to_write = photographed_frames
+			outdir = f'./output/{case_name}/'
+			if os.path.exists(outdir) == False:	
+				os.mkdir(outdir)
 
 
-	reader = vtk.vtkXMLImageDataReader()
-	reader.SetFileName(vti_time_series_files[0])
-	reader.Update()
-	vti = reader.GetOutput()
+			vti_time_series_files = glob_sort_files(vti_series_path,'vti')
+			particle_time_series_files = glob_sort_files(particle_polydata_path,'vtp')[::step_stride]
 
-	u_voxels = preprocessing.get_umag_voxel_array(vti)
-	model_overlay = np.where(u_voxels>0,1,0)
-	voxel_array = np.zeros(vti.GetDimensions())
+			photographed_frames = np.arange(track_length,len(particle_time_series_files),track_length)
 
-	outdir = f'/mnt/3414B51914B4DED4/dicom/cfd-dicom/cfd-dicom/output/voxelized_pathline_coarse_{track_length}ss_withgeo/'
-	case_name = f'voxelized_pathline_caorse_{track_length}ss_sigma{sigma}_geo'
-	n_timesteps = n_DICOM_frames
-	#n_timesteps= int(len(particle_time_series_files)/track_length)
-	dicom_stack = wd.dicom_stack(write_dir=outdir,n_timesteps=n_timesteps,case_name=case_name)
-
-
-	track_counter = 1
-	for t,timestep in enumerate(particle_time_series_files[:-1]):
-
-		track_counter +=1
-
-		next_step = particle_time_series_files[t+1]
-
-		all_particles = pv.read(timestep)
-		next_all_particles = pv.read(next_step)
-
-		common_ids = np.intersect1d(all_particles.point_arrays['ParticleId'],next_all_particles.point_arrays['ParticleId'])
-
-		for particle_id in common_ids:
-
-			point = all_particles.points[np.where(all_particles.point_arrays['ParticleId'] == particle_id)][0]
-			next_point = next_all_particles.points[np.where(next_all_particles.point_arrays['ParticleId'] == particle_id)][0]
-
-			#point = particle.points[0]
-			#next_point = next_particle.points[0]
-
-			#find closest point on grid
-			point_id_on_grid = vti.FindPoint(point)
-			next_point_id_on_grid = vti.FindPoint(next_point)
-
-			if point_id_on_grid != -1 and next_point_id_on_grid !=-1:
-
-				#we have a vild point
-
-				x1,y1,z1 = point_id_to_structured_coords(vti, point_id_on_grid)
-
-				x2,y2,z2 = point_id_to_structured_coords(vti, next_point_id_on_grid)
-				
-				voxel_spline = Bresenham3D(x1,y1,z1,x2,y2,z2)
-
-				for line_point in voxel_spline:
-					z = line_point[0] #flip for writing from np array to dcm directly
-					y=line_point[1]
-					x=line_point[2]
-
-					voxel_array[x,y,z] +=1
-			
+			if len(photographed_frames) > n_DICOM_frames:
+				idx = np.round(np.linspace(0, len(photographed_frames) - 1, n_DICOM_frames)).astype(int)
+				frames_to_write = photographed_frames[idx]
 			else:
-				print (f'skipped particle {particle_id} at step {t} because not in domain',end="\r")
-			
+				frames_to_write = photographed_frames
 
-		if t in photographed_frames and t in frames_to_write:
-			blurred = gaussian_filter(voxel_array,sigma=sigma)
-			voxel_array = blurred
 
-			'''
-			#see https://vtk.org/Wiki/VTK/Writing_VTK_files_using_python
-			#dimensions
-			nx, ny, nz = vti.GetDimensions()
-			ncells = nx * ny * nz
-			npoints = (nx + 1) * (ny + 1) * (nz + 1) 
+			u_voxels = preprocessing.get_umag_pixel_array(vti)
+			model_overlay = np.where(u_voxels>0,1,0)
 
-			outfile = f'/mnt/3414B51914B4DED4/dicom/data/voxelize_pathlines/500randomseed/vti/TEST3dbresenhm_200x200x200_track{track_length}_blurred_sigma{sigma}_{str(t).zfill(4)}'
+			z_dim,y_dim,x_dim = vti.GetDimensions()
+			voxel_array = np.zeros((x_dim,y_dim,z_dim))	
 
-			imageToVTK(outfile, origin= vti.GetOrigin(), spacing= vti.GetSpacing(), pointData = {"pathline" : blurred} ) #can work for cell data too
-			'''
-			
-			
-			voxel_array *= 1000
-			voxel_array+=model_overlay
-			#voxel_array = np.where(voxel_array==0,model_overlay,voxel_array)
+			voxel_size = np.max(vti.GetSpacing())
+			sigma = sigma/voxel_size
 
-			print (f'-------------Step {t}-------------------')
-			print (voxel_array.min(),voxel_array.max())
-			print (voxel_array.astype(np.uint16).min(),voxel_array.astype(np.uint16).max())
-			dicom_stack.write_isotemporal_slices(voxel_array)
-			
+			n_timesteps = n_DICOM_frames
+			#n_timesteps= int(len(particle_time_series_files)/track_length)
+			dicom_stack = wd.dicom_stack(write_dir=outdir,n_timesteps=n_timesteps,case_name=case_name)
 
-			#reset voxel to 0 at every timstep. Or in future use 4d arrray and write out slices?
-			voxel_array = np.zeros(vti.GetDimensions())
+
 			track_counter = 1
+			for t,timestep in enumerate(particle_time_series_files[:-1]):
 
-		elif t in photographed_frames:
-			voxel_array = np.zeros(vti.GetDimensions())
-			track_counter = 1
+				track_counter +=1
 
+				next_step = particle_time_series_files[t+1]
 
-		#print (f'Failed at time {t}')
-	
+				all_particles = pv.read(timestep)
+				next_all_particles = pv.read(next_step)
 
+				common_ids = np.intersect1d(all_particles.point_arrays['ParticleId'],next_all_particles.point_arrays['ParticleId'])
 
-		#new_point = pv.PolyData(np.array(vti.GetPoint(vti.FindPoint(point))))
-		#new_point.field_arrays['TimeValue'] =  particle.field_arrays['TimeValue']
+				for particle_id in common_ids:
 
+					point = all_particles.points[np.where(all_particles.point_arrays['ParticleId'] == particle_id)][0]
+					next_point = next_all_particles.points[np.where(next_all_particles.point_arrays['ParticleId'] == particle_id)][0]
 
-		#new_point.save(f'/mnt/3414B51914B4DED4/dicom/data/voxelize_pathlines/SINGLE_POINT/single_point_tracked_polydata/200x200grid_new_point/resampled_point_{str(t).zfill(4)}.vtp')
+					#point = particle.points[0]
+					#next_point = next_particle.points[0]
 
+					#find closest point on grid
+					point_id_on_grid = vti.FindPoint(point)
+					next_point_id_on_grid = vti.FindPoint(next_point)
+
+					if point_id_on_grid != -1 and next_point_id_on_grid !=-1:
+
+						#we have a vild point
+
+						x1,y1,z1 = point_id_to_structured_coords(vti, point_id_on_grid)
+
+						x2,y2,z2 = point_id_to_structured_coords(vti, next_point_id_on_grid)
+						
+						voxel_spline = Bresenham3D(x1,y1,z1,x2,y2,z2)
+
+						for line_point in voxel_spline:
+							z=line_point[0] #flip for writing from np array to dcm directly
+							y=line_point[1]
+							x=line_point[2]
+
+							voxel_array[x,y,z] +=1
+					
+					else:
+						print (f'skipped particle {particle_id} at step {t} because not in domain',end="\r")
+					
+
+				if t in photographed_frames and t in frames_to_write:
+					blurred = gaussian_filter(voxel_array,sigma=sigma)
+					voxel_array = blurred/blurred.max()
+
+					'''
+					#see https://vtk.org/Wiki/VTK/Writing_VTK_files_using_python
+					#dimensions
+					nx, ny, nz = vti.GetDimensions()
+					ncells = nx * ny * nz
+					npoints = (nx + 1) * (ny + 1) * (nz + 1) 
+
+					outfile = f'/mnt/3414B51914B4DED4/dicom/data/voxelize_pathlines/500randomseed/vti/TEST3dbresenhm_200x200x200_track{track_length}_blurred_sigma{sigma}_{str(t).zfill(4)}'
+
+					imageToVTK(outfile, origin= vti.GetOrigin(), spacing= vti.GetSpacing(), pointData = {"pathline" : blurred} ) #can work for cell data too
+					'''
+					
+					
+					voxel_array *= 1000
+					voxel_array+=model_overlay
+					#voxel_array = np.where(voxel_array==0,model_overlay,voxel_array)
+
+					print (f'-------------Step {t}-------------------')
+					print (voxel_array.min(),voxel_array.max())
+					print (voxel_array.astype(np.uint16).min(),voxel_array.astype(np.uint16).max())
+					dicom_stack.write_isotemporal_slices(voxel_array)
+					
+
+					#reset voxel to 0 at every timstep. Or in future use 4d arrray and write out slices?
+					voxel_array = np.zeros((x_dim,y_dim,z_dim))	
+					track_counter = 1
+
+					break
+
+				elif t in photographed_frames:
+					voxel_array = np.zeros((x_dim,y_dim,z_dim))	
+					track_counter = 1
 	

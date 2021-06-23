@@ -9,9 +9,9 @@ import h5py,os
 import numpy as np
 from pathlib import Path
 
-VOXEL_SIZE = 0.06     #in mm, assuming mesh lengths are also in mm
+VOXEL_SIZE = 0.05     #in mm, assuming mesh lengths are also in mm
 #N_STEPS = 100       #number of steps to sample. Will take this many steps uniformly over all available steps
-STEP = 250
+STEP = 4
 
 CLIP = True
 
@@ -31,14 +31,16 @@ if __name__ == '__main__':
 	data_path = Path('/Volumes/lucas-ssd/MASc/Ubuntu_backup/dicom/pipe_ipcs_ab_cn_4D027_MCA07_constant_ts9600_cycles2_uOrder1')
 	mesh_file = data_path/'4D027_MCA07.h5'
 
-	outdir = Path(f'/Users/lucas/Documents/School/BSL/Horos/isotropic_voxels/comparison_filesize/')
+	outdir = Path(f'/Users/lucas/Documents/School/BSL/Horos/isotropic_voxels/render_styles/')
+
+	CLIP_BOX = CLIP_BOX_PARENT
 
 	####################################
 
 	if os.path.exists(outdir) == False:	
 		os.mkdir(outdir)
 
-	for CLIP,CLIP_BOX in zip([False,'parent','sac'],[0,CLIP_BOX_PARENT,CLIP_BOX_SAC]):
+	for CLIP,CLIP_BOX in zip(['parent'],[CLIP_BOX_PARENT]):
 
 		all_timesteps = sorted(data_path.glob('*ts=*'))
 		sample_indices = [STEP]#np.round(np.linspace(0, len(all_timesteps) - 1, N_STEPS)).astype(int)
@@ -80,9 +82,10 @@ if __name__ == '__main__':
 
 			# Compute Q
 			mesh = mesh.compute_derivative(qcriterion=True,gradient=False,scalars='u')
+			mesh.point_arrays['qcriterion'] = np.where(mesh.point_arrays['qcriterion']>2,2,mesh.point_arrays['qcriterion'])
 
 			structured_mesh = pv.create_grid(mesh, dimensions=(n_voxels_x,n_voxels_y,n_voxels_z))
 			resampled_image = structured_mesh.sample(mesh)
 
-		filename = f'{case_name}_size{VOXEL_SIZE}_clip{CLIP}_step250.vti'
+		filename = f'{case_name}_size{VOXEL_SIZE}_clip{CLIP}_step{STEP}.vti'
 		resampled_image.save(outdir/filename)
