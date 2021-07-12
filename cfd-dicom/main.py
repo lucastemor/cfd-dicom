@@ -23,19 +23,18 @@ if __name__=='__main__':
 
 	############### SETTINGS ###########################
 
-	vti_series_path = '/Users/lucas/Documents/School/BSL/Horos/isotropic_voxels/MCA07/'
+	vti_series_path = '/Users/lucas/Documents/School/BSL/Horos/isotropic_voxels/MCA07_size0.05_parent/'
 	#vti_series_path = '/home/lucas/Documents/viz/renders/Horos/surgical/MCA07/q_200x0200/'
 	#png_series_path = '/Users/lucas/Documents/School/BSL/cfd-dicom/foo/pathline/'
 
 	quantity = 'u' #'u' # or 'q' or 'pathline' or 'dye'
-	case_name = f'MCA07_13bit_isotropic_voxels_{quantity}'
+	case_name = f'MCA07_FULLSERIES_SIZE0.05parent_{quantity}'
 
 
 	######################################################
 
 
-	time_series_files = glob_sort_files(vti_series_path,'vti')[0:10]
-
+	time_series_files = glob_sort_files(vti_series_path,'vti')
 
 	outdir = f'./output/{case_name}/'
 	if os.path.exists(outdir) == False:	

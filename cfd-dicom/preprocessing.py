@@ -30,6 +30,7 @@ def get_q_pixel_array(vti,name=None,threshold=True):
 	q_criterion = np.array(vti.GetPointData().GetArray(name))
 	if threshold: 
 		q_criterion = np.where(q_criterion < 0, 0.02, q_criterion)
+		q_criterion = np.where(q_criterion>3,3,q_criterion)
 		#print ('Threshold!', q_criterion.min(), q_criterion.max()) 	
 
 	q_voxel = vti_reshape(q_criterion,dimensions)
