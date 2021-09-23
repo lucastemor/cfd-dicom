@@ -41,6 +41,7 @@ class dicom_stack:
 		self.pixel_array = None
 		self.slice_axis = None
 
+		self.quantity = None
 
 	def set_metadata(self):
 		"""
