@@ -3,7 +3,7 @@ Tools for converting CFD data to 4D dicom series
 
 Args are specified at the top of the `if __name__ == '__main__'` block.
 
-##important: need to fix coord. system transformation for pathlines
+## Important: need to fix coord. system transformation for pathlines
 
 ### Usage - `cfd-dicom.py` args
 **Scalars**
