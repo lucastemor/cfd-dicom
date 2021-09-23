@@ -13,6 +13,7 @@ Args are specified at the top of the `if __name__ == '__main__'` block.
 4. **`quantities`** - velocity, q-criterion, or pathlines. Can specify any combination of `u`, `q`, `path` depending on the DICOM series to be generated. **Note**: if `path` is specified, pathline args shown beow must also be specified
 
 **Pathlines**
+
 5. **`particle_polydata_path`** - path to `.vtp` series containing tracked particle polydata in the same mesh as specified above. Assumes data are tracked particles written out of Paraview's `ParticleTracer` filter 
 6. **`sigma`** - Radius of blurring amount. Assumes same length scales as mesh/voxel size above.
 7. **`track_length`** - Akin to "exposure time" (Steinman, 2000). Larger values will result in longer particle streaks. A `track_length` of `n` means that the particle field is imaged every `n` timesteps. **Note**: In this code there is a difference between "imaging" the flow (i.e., resetting the "light" on the lens) and actually *writing* a DICOM snapshot. The former is dependent on `track_length` and the later on  `n_steps`. What is ultimately written to DICOM is the *intersection* of frames accounted for in the sampling with `n_steps` and the snapshot frames resulting from `track_length`
