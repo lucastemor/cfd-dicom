@@ -7,3 +7,4 @@ Tools for converting CFD data to 4D dicom stacks
 <br>scaling for q-criterion
 <br>Pathline voxels-DONE 
 <br>horos Movie export metadata 
+<br> documentaiton and instructions
