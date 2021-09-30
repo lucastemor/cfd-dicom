@@ -1,5 +1,8 @@
 """
+OLD MAIN script
+
 tool for automating conversions and i/o
+
 """
 
 import vtk,sys
@@ -23,52 +26,48 @@ if __name__=='__main__':
 
 	############### SETTINGS ###########################
 
-	vti_series_path = '/Users/lucas/Documents/School/BSL/Horos/isotropic_voxels/render_styles/'
+	vti_series_path = '/Users/lucas/Documents/School/BSL/Horos/isotropic_voxels/MCA07_size0.05_parent/'
 	#vti_series_path = '/home/lucas/Documents/viz/renders/Horos/surgical/MCA07/q_200x0200/'
 	#png_series_path = '/Users/lucas/Documents/School/BSL/cfd-dicom/foo/pathline/'
 
-	quantity = 'q' #'Users' # or 'q' or 'pathline' or 'dye'
-	#case_name = f'MCA07_13bit_isotropic_voxels_{quantity}'
+	quantity = 'u' #'u' # or 'q' or 'pathline' or 'dye'
+	case_name = f'MCA07_FULLSERIES_SIZE0.05parent_{quantity}'
 
 
 	######################################################
 
 
-	resolutions = glob_sort_files(vti_series_path,'vti')
+	time_series_files = glob_sort_files(vti_series_path,'vti')
 
-	for res_file in resolutions:
-		time_series_files = [res_file]#glob_sort_files(vti_series_path,'vti')[0:10]
-		case_name = f'STYLEcompare_clipp{quantity}_'+os.path.splitext(os.path.split(res_file)[1])[0]
+	outdir = f'./output/{case_name}/'
+	if os.path.exists(outdir) == False:	
+		os.mkdir(outdir)
 
-		outdir = f'./output/{case_name}/'
-		if os.path.exists(outdir) == False:	
-			os.mkdir(outdir)
+	name = None
 
-		name = None
+	if quantity == 'u':
+		conversion_function = preprocessing.get_umag_pixel_array
+	elif quantity == 'q':
+		conversion_function = preprocessing.get_q_pixel_array
+	elif quantity == 'dye':
+		conversion_function = preprocessing.get_q_pixel_array
+		name = 'n_points_in_cell'
+	else:
+		print (f'quantity {quantity} unknown or unspecified')
+		sys.exit()
 
-		if quantity == 'u':
-			conversion_function = preprocessing.get_umag_pixel_array
-		elif quantity == 'q':
-			conversion_function = preprocessing.get_q_pixel_array
-		elif quantity == 'dye':
-			conversion_function = preprocessing.get_q_pixel_array
-			name = 'n_points_in_cell'
-		else:
-			print (f'quantity {quantity} unknown or unspecified')
-			sys.exit()
+	#time_series_files = glob_sort_files(vti_series_path,'vti')[0:]
+	dicom_stack = wd.dicom_stack(write_dir=outdir,n_timesteps=len(time_series_files),case_name=case_name)
 
-		#time_series_files = glob_sort_files(vti_series_path,'vti')[0:]
-		dicom_stack = wd.dicom_stack(write_dir=outdir,n_timesteps=len(time_series_files),case_name=case_name)
+	for t,timestep in enumerate(time_series_files):
+		reader = vtk.vtkXMLImageDataReader()
+		reader.SetFileName(timestep)
+		reader.Update()
+		vti = reader.GetOutput()
+	
+		array_3d = conversion_function(vti,name = name)
 
-		for t,timestep in enumerate(time_series_files):
-			reader = vtk.vtkXMLImageDataReader()
-			reader.SetFileName(timestep)
-			reader.Update()
-			vti = reader.GetOutput()
-		
-			array_3d = conversion_function(vti,name = name)
-
-			dicom_stack.write_isotemporal_slices(array_3d)
+		dicom_stack.write_isotemporal_slices(array_3d)
 
 
 	'''

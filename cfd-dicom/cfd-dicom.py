@@ -1,12 +1,8 @@
 '''
 Command line tool fo converting unstructured CFD data to DICOM series
 
-Usage
---------
-	1. Path to .h5 mesh, with .h5 timesteps in the same folder
-	2. Number of steps (int) - for sampling will uniformly sample over these steps
-	3. Voxel size (float) - isotropic voxel length in mm, assuming mesh lengths are also in mm
-	3. Quantities (str) - will search .h5 time series for these arrays (can specify multiple) e.g., u q will write DICOM series for both velocity and q 
+
+Please see README.md for description of args
 
 '''
 
@@ -41,15 +37,16 @@ if __name__ == '__main__':
 	########### Read args ##############
 	
 	mesh_path  = Path('/Users/BSL/Documents/AneurysmData/c0053_ACA_T/c0053_ACA_T_mesh.h5') #sys.argv[1]  
-	n_steps    = 50 #sys.argv[2]  
+	n_steps    = 1200 #sys.argv[2]  
 	voxel_size = 0.1 #sys.argv[3] 
-	quantities = ['u','path'] #sys.argv[4:]
+	quantities = ['path'] #sys.argv[4:]
 
 	########## For pathlines #########
 	particle_polydata_path = Path('/Users/BSL/Documents/AneurysmData/ComputedPathlines/c0053/500randomseed')
 	sigma 		 = 0.1
-	track_length = 4
+	track_length = 1
 	step_stride  = 2
+	particle_stride
 	####################################
 
 	######## Prepare spatiotemporal sampling, output, and mesh clipping #############
