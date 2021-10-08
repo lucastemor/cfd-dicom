@@ -27,3 +27,9 @@ Some process work and/or other interesting (but no longer necessary) scripts can
 
 ### Dependencies
 `pyvista`, `h5py`, `numpy`, `scipy`, `pathlib`, `skimage`, `pydicom`
+
+
+### To do
+1. Streamlines and/or velocity interpolation
+2. Better documentation
+3. Example data / script

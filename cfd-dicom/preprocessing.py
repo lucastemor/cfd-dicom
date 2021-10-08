@@ -4,6 +4,8 @@ import glob,re,os
 
 from scipy.signal import convolve2d as conv2
 
+import pyvista as pv
+
 SCALE_FACTOR = 1000
 
 def rescale_to_dicom(array):
@@ -196,6 +198,59 @@ def vti_get_umag_pixel_array_vti(vti,name=None):
 	u_voxel = vti_reshape(u_mag,dimensions)
 
 	return rescale_to_dicom(u_voxel)
+
+class streamline_select():
+	def __init__(self, surf):
+		
+		self.centre=(0,0,0)
+		self.radius=4
+		self.npts  =20
+
+		def update_location(xyz,probe):
+			self.centre = xyz
+			self.radius = probe.GetRadius()
+			update_seed_pts(self.npts)
+
+		def update_seed_pts(value):
+			self.npts = int(value)
+
+
+			### actually makes a cube not a sphere .. good enough for now
+			x_bounds_upper = self.centre[0]+self.radius
+			x_bounds_lower = self.centre[0]-self.radius
+
+			y_bounds_upper = self.centre[1]+self.radius
+			y_bounds_lower = self.centre[1]-self.radius
+
+			z_bounds_upper = self.centre[2]+self.radius
+			z_bounds_lower = self.centre[2]-self.radius
+
+
+			points = np.array(
+							  [[np.random.uniform(x_bounds_upper,x_bounds_lower), 
+				 			    np.random.uniform(y_bounds_upper,y_bounds_lower),
+				 			    np.random.uniform(z_bounds_upper,z_bounds_lower)] for _ in range(self.npts)]
+				)
+
+			sampled_points= pv.PolyData(points)
+			p.add_mesh(sampled_points,name="points")
+
+		p = pv.Plotter()
+		p.add_mesh(surf, color='w',opacity=0.3)
+		p.add_sphere_widget(
+			callback=update_location, 
+            center=np.mean(surf.points, axis=0), 
+            radius=4.0, 
+            theta_resolution=8,
+            pass_widget=True,
+            phi_resolution=8,
+            style='wireframe',
+            )
+
+		p.add_slider_widget(update_seed_pts, [1, 250], title='npts')
+		p.add_text('Select streamline seed pos., radius, and n. pts.', position='upper_left', font_size=18)
+		p.show()
+
 
 
 '''

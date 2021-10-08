@@ -37,16 +37,15 @@ if __name__ == '__main__':
 	########### Read args ##############
 	
 	mesh_path  = Path('/Users/BSL/Documents/AneurysmData/c0053_ACA_T/c0053_ACA_T_mesh.h5') #sys.argv[1]  
-	n_steps    = 1200 #sys.argv[2]  
-	voxel_size = 0.1 #sys.argv[3] 
-	quantities = ['path'] #sys.argv[4:]
+	n_steps    = 99 #sys.argv[2]  
+	voxel_size = 0.05 #sys.argv[3] 
+	quantities = ['stream'] #sys.argv[4:]
 
 	########## For pathlines #########
 	particle_polydata_path = Path('/Users/BSL/Documents/AneurysmData/ComputedPathlines/c0053/500randomseed')
-	sigma 		 = 0.1
+	sigma 		 = 0.01
 	track_length = 1
 	step_stride  = 2
-	particle_stride
 	####################################
 
 	######## Prepare spatiotemporal sampling, output, and mesh clipping #############
@@ -93,6 +92,12 @@ if __name__ == '__main__':
 	n_voxels_y = int(np.floor(y_length/voxel_size))
 	n_voxels_z = int(np.floor(z_length/voxel_size))
 
+	if "stream" in quantities:
+		select = preprocessing.streamline_select(mesh)
+		radius = select.radius
+		centre = select.centre
+		npts   = select.npts
+
 	##################################################################################
 
 
@@ -130,14 +135,89 @@ if __name__ == '__main__':
 			resampled_image = structured_mesh.sample(mesh)
 
 		for quantity in quantities:
-			if quantity != 'path':
+			if quantity != 'path' and quantity != 'stream':
 				scaling_function = get_scaling_function(quantity)
 				array_3d = scaling_function(resampled_image)
 				dicom_series[quantity].write_isotemporal_slices(array_3d)
 				#resampled_image.save(outdir/f"resampledimage_{str(i).zfill(4)}.vti")
 	##################################################################################
 
+	#################### Streamlines #############################
+	if 'stream' in quantities:
+		hf = h5py.File(timesteps_to_read[10], 'r')
+		u = np.array(hf['Solution']['u'])
+		mesh.point_data['u'] = u[mesh.point_data['ids']]
+		mesh.point_data['u'] = u[mesh.point_data['ids']]
+		structured_mesh = pv.create_grid(mesh, dimensions=(n_voxels_x,n_voxels_y,n_voxels_z))
+		resampled_image = structured_mesh.sample(mesh)
+		
+		streamlines, src = mesh.streamlines(
+			vectors = 'u',
+			return_source=True,
+			max_time=1000.0,
+			initial_step_length=2.0,
+			terminal_speed=0.001,
+			n_points=npts,
+			source_radius=radius,
+			source_center=centre,
+			)
 
+		#Label each unique streamline
+		streamlines.point_data['line_id'] = -1*np.ones_like(streamlines.point_data['ids'])
+		line_id = 0
+		t_prev=-9999
+		for i,t in enumerate(streamlines.point_data['IntegrationTime']):
+			if t < t_prev:
+				line_id += 1
+			streamlines.point_data['line_id'][i] = line_id
+			t_prev = t
+
+		#init arrays for writing
+		scaling_function = get_scaling_function('u')
+		array_3d = scaling_function(resampled_image)
+
+		model_overlay = np.where(array_3d>0,1,0)
+		voxel_array = np.zeros_like(model_overlay)	
+		voxel_size = np.max(resampled_image.spacing)
+		sigma_stream = sigma/voxel_size
+
+		#draw lines
+		for line in np.unique(streamlines.point_data['line_id']):
+			streamline_points = streamlines.points[streamlines.point_data['line_id']==line]
+			
+			for i,streamline_point in enumerate(streamline_points[0:-1]):
+				next_line_point = streamline_points[i]
+
+				point_id_on_grid = resampled_image.FindPoint(streamline_point)
+				next_point_id_on_grid = resampled_image.FindPoint(next_line_point)
+
+				if point_id_on_grid != -1 and next_point_id_on_grid !=-1:
+
+					#we have a valid point
+
+					x1,y1,z1 = preprocessing.point_id_to_structured_coords(resampled_image, point_id_on_grid)
+
+					x2,y2,z2 = preprocessing.point_id_to_structured_coords(resampled_image, next_point_id_on_grid)
+					
+					voxel_spline = preprocessing.Bresenham3D(x1,y1,z1,x2,y2,z2)
+
+					for line_point in voxel_spline:
+						z=line_point[0] #flip for writing from np array to dcm directly
+						y=line_point[1]
+						x=line_point[2]
+
+						#voxel_array[x,y,z] +=1
+						voxel_array[x,y,z] = array_3d[x,y,z]
+		blurred = gaussian_filter(voxel_array,sigma=sigma_stream)
+		voxel_array += blurred
+
+		#voxel_array *= 1000
+		voxel_array+=model_overlay
+
+		#kjhgfd
+		#out = pv.create_grid(voxel_array, dimensions=(n_voxels_x,n_voxels_y,n_voxels_z))
+		dicom_series['stream'].write_isotemporal_slices(voxel_array)				
+				
 	#################### Pathlines ##########################
 	if 'path' in quantities:
 		particle_time_series_files = sorted(list(particle_polydata_path.glob('*.vtp')),key = lambda x : int(re.findall(r'([\d]+).{}'.format('vtp'),str(x))[0]))[::step_stride]
