@@ -32,5 +32,5 @@ Some process work and/or other interesting (but no longer necessary) scripts can
 
 ### To do
 1. Streamlines and/or velocity interpolation
-2. Example data / script
+2. Example data/script 
 3. There are some redundant/repetitive chunks of code, there is probably a better, more "streamlined ;-)" approach to organization 
