@@ -43,7 +43,7 @@ def get_q_pixel_array(pv_structured_grid,name=None,threshold=True):
 
 def get_umag_pixel_array(pv_structured_grid,name=None):
 	"""
-	Array name will vary depedniong on how simulation results are saved
+	Array name will vary depedning on how simulation results are saved
 	here we try two possibiltiies, if not, custom name can be specifiied 
 	Can be used for other vector quantities if custom name is passed
 	"""
@@ -52,7 +52,7 @@ def get_umag_pixel_array(pv_structured_grid,name=None):
 
 	u_mag = np.linalg.norm(np.array(pv_structured_grid.point_data['u']),axis=1)
 	
-	u_voxel = struct_reshape(u_mag,dimensions)
+	u_voxel = struct_res hape(u_mag,dimensions)
 
 	return rescale_to_dicom(u_voxel)
 
@@ -133,7 +133,7 @@ def Bresenham3D(x1, y1, z1, x2, y2, z2):
 
 def point_id_to_structured_coords(pv_structured, point_id):
 	"""
-	adaptted for pyvista sturctured grid
+	adapted for pyvista sturctured grid
 	vti written in paraview will count from (0,0,0) to (dim,dim,dim) incrementing xdime+1 every time and periodically loopiung back to x=0 but then iuncrmeenting y up to y dim .. etc..
 	"""
 
@@ -145,8 +145,9 @@ def point_id_to_structured_coords(pv_structured, point_id):
 
 	return x,y,z
 
-################### OLD functions for reading VTI ###########################
-
+############################################################################
+################### OLD functions for reading VTI ##########################
+############################################################################
 
 def vti_reshape(array_1d,dimensions_3d):
 	'''
@@ -198,6 +199,10 @@ def vti_get_umag_pixel_array_vti(vti,name=None):
 	u_voxel = vti_reshape(u_mag,dimensions)
 
 	return rescale_to_dicom(u_voxel)
+
+	###########################################################################
+	###########################################################################
+
 
 class streamline_select():
 	def __init__(self, surf):

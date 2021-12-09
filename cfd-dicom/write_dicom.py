@@ -67,6 +67,7 @@ class dicom_stack:
 
 		dimensions = self.pixel_array.shape
 
+		#i.e., we're minimizing the number of files written at the expense of larger individual files (which can have internal compression)
 		if self.slice_axis == 0:
 			reconstruct_target = [self.LocalSliceId,0.0, 0.0]
 			image_position_patient = pydicom.multival.MultiValue(pydicom.valuerep.DSfloat,[float(self.LocalSliceId),dimensions[0]/2.0,dimensions[1]/2.0])
@@ -172,6 +173,11 @@ class dicom_stack:
 
 	def write(self):
 		self.ds.save_as(self.ds.filename)
+
+
+###############################
+######### OLD #################
+###############################
 
 '''
 class OLD_dicom_stack:
