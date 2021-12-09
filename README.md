@@ -3,7 +3,9 @@ Tools for converting CFD data to 4D dicom series
 
 At its most basic level, you can use `cfd-dicom.py` to convert scalars or integrated quantities to DICOM series to be rendered in Horos. Input data must be specified in the `cfd-dicom.py` script. In the future, could be modified to do batch jobs or pass args as command line args. Ultimately, DICOM series are stored to `./cfd-dicom/output/{case folder}_voxelsize={voxel_size}_nsteps={n_steps}/`. Descriptions of `voxel_size`, `n_steps`, and all other necesary inputs are given below. 
 
-### Usage - `cfd-dicom.py` args. For now, these are immeadiately following the `if __name__ == '__main__'` block.
+### Usage - `cfd-dicom.py` args. 
+
+For now, these are immeadiately following the `if __name__ == '__main__'` line.
 
 **Scalars**
 1. **`mesh_path`** - path to `.h5` mesh containing `coordinates` and `topology`
