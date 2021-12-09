@@ -52,7 +52,7 @@ def get_umag_pixel_array(pv_structured_grid,name=None):
 
 	u_mag = np.linalg.norm(np.array(pv_structured_grid.point_data['u']),axis=1)
 	
-	u_voxel = struct_res hape(u_mag,dimensions)
+	u_voxel = struct_reshape(u_mag,dimensions)
 
 	return rescale_to_dicom(u_voxel)
 

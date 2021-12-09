@@ -7,6 +7,8 @@ At its most basic level, you can use `cfd-dicom.py` to convert scalars or integr
 
 For now, these are immeadiately following the `if __name__ == '__main__'` line.
 
+By default, these are specified to read the example data in `cfd-dicom/example_data/`
+
 **Scalars**
 1. **`mesh_path`** - path to `.h5` mesh containing `coordinates` and `topology`
 2. **`n_steps`*** - number of timesteps to sample. Will pick **uniformly** over all avaliable timesteps. E.g., if there are 1000 steps total and `n_steps = 100` every 10th step will be written to DICOM. Eventually, more intelligent sampling schemes could be used, like "bulllet time"
@@ -32,5 +34,4 @@ Some process work and/or other interesting (but no longer necessary) scripts can
 
 ### To do
 1. Streamlines and/or velocity interpolation
-2. Example data/script 
-3. There are some redundant/repetitive chunks of code, there is probably a better, more "streamlined ;-)" approach to organization 
+2. There are some redundant/repetitive chunks of code, there is probably a better, more "streamlined ;-)" approach to organization 

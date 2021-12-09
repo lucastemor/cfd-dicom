@@ -39,13 +39,13 @@ if __name__ == '__main__':
 	########### Read/specify args ##############
 	############################################
 	
-	mesh_path  = Path('/Users/BSL/Documents/AneurysmData/c0053_ACA_T/c0053_ACA_T_mesh.h5') #sys.argv[1]  
-	n_steps    = 99 #sys.argv[2]  
+	mesh_path  = Path('./example_data/c0053_ACA_T/c0053_ACA_T_mesh.h5') #sys.argv[1]  
+	n_steps    = 10 #sys.argv[2]  
 	voxel_size = 0.05 #sys.argv[3] 
-	quantities = ['stream'] #sys.argv[4:]
+	quantities = ['u','q','path']  #'stream' in future #sys.argv[4:]
 
 	########## For pathlines #########
-	particle_polydata_path = Path('/Users/BSL/Documents/AneurysmData/ComputedPathlines/c0053/500randomseed')
+	particle_polydata_path = Path('./example_data/c0053_ACA_T/computed_pathlines')
 	sigma 		 = 0.01
 	track_length = 1
 	step_stride  = 2
@@ -155,7 +155,7 @@ if __name__ == '__main__':
 				scaling_function = get_scaling_function(quantity)
 				array_3d = scaling_function(resampled_image)
 				dicom_series[quantity].write_isotemporal_slices(array_3d)
-				#resampled_image.save(outdir/f"resampledimage_{str(i).zfill(4)}.vti")
+				#resampled_image.save(outdir/f"resampledimage_{str(i).zfill(4)}.vti") 
 
 
 	#########################################################		
