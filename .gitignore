@@ -132,4 +132,4 @@ foo
 output/*
 *.dcm
 *.zip
-.DS_Store
+DS_Store
